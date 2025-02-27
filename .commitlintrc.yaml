@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://github.com/KeisukeYamashita/commitlint-rs/releases/latest/download/schema.json
+#
+# based on:
+#   - https://www.conventionalcommits.org/en/v1.0.0/#specification
+#   - https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type
+#   - https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
+#
+rules:
+  type:
+    level: error
+    options:
+      - build # Changes that affect the build system or external dependencies (example scopes: cargo, nix)
+      - ci # Changes to our CI configuration files and scripts (example scopes: GitHub Actions)
+      - docs # Documentation only changes
+      - feat # A new feature
+      - fix # A bug fix
+      - perf # A code change that improves performance
+      - refactor # A code change that neither fixes a bug nor adds a feature
+      - style # Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+      - test # Adding missing tests or correcting existing tests
+
+  scope:
+    level: error
+    optional: true
+    options:
+      - cargo
+      - nix
+
+  description-empty:
+    level: error
+
+  description-max-length:
+    level: warning
+    length: 50

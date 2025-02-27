@@ -7,3 +7,6 @@ run:
 
 build:
     cargo build
+
+check:
+    nix flake check
