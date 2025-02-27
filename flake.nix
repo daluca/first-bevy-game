@@ -9,9 +9,12 @@
 
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, rust-overlay, git-hooks, ... }:
+  outputs = { self, nixpkgs, rust-overlay, git-hooks, treefmt-nix }:
   let
     supportedSystems = [ "x86_64-linux" ];
     forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
@@ -29,6 +32,31 @@
       cargo = (rust system);
       rustc = (rust system);
     };
+    treefmt = system: treefmt-nix.lib.evalModule (pkgs system) {
+      projectRootFile = "flake.nix";
+      programs = {
+        just.enable = true;
+        mdformat.enable = true;
+        nixfmt.enable = true;
+        rustfmt = {
+          enable = true;
+          edition = "2024";
+        };
+        shfmt.enable = true;
+        toml-sort = {
+          enable = true;
+        };
+        yamlfmt.enable = true;
+      };
+      settings.global.excludes = [
+        "LICENSE"
+        ".editorconfig"
+      ];
+      settings.formatter = {
+        rustfmt.package = (rust system);
+        toml-sort.options = [ "--no-sort-tables" ];
+      };
+    };
   in {
     checks = forEachSystem (system:
       let
@@ -36,6 +64,7 @@
         rust' = (rust system);
         bevyDependencies' = (bevyDependencies system);
         rustPlatform' = (rustPlatform system);
+        treefmt' = (treefmt system);
       in {
         pre-commit = git-hooks.lib.${system}.run {
           src = ./.;
@@ -79,7 +108,15 @@
             };
           };
         };
+
+        formatting = treefmt'.config.build.check self;
       }
+    );
+
+    formatter = forEachSystem (system:
+      let
+        treefmt' = (treefmt system);
+      in treefmt'.config.build.wrapper
     );
 
     devShells = forEachSystem (system:
