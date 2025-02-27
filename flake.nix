@@ -19,7 +19,7 @@
           inherit system;
           overlays = [(import rust-overlay)];
         };
-        rust = pkgs.rust-bin.stable.latest.default;
+        rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         bevyDependencies = with pkgs; [
           pkg-config
           alsa-lib
