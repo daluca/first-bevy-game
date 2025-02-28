@@ -124,7 +124,6 @@
                 stages = [ "prepare-commit-msg" ];
                 pass_filenames = false;
                 require_serial = true;
-                verbose = true;
               };
             };
           };
