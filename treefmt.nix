@@ -1,4 +1,4 @@
-{ rust }:
+{ rust, edition }:
 
 {
   projectRootFile = "flake.nix";
@@ -8,8 +8,8 @@
     mdformat.enable = true;
     nixfmt.enable = true;
     rustfmt = {
+      inherit edition;
       enable = true;
-      edition = "2024";
     };
     shfmt.enable = true;
     toml-sort = {

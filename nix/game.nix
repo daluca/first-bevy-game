@@ -1,12 +1,14 @@
 {
+  version,
   rustPlatform,
   buildTimeDependencies,
   runTimeDependencies,
 }:
 
 rustPlatform.buildRustPackage {
+  inherit version;
+
   pname = "first-bevy-game";
-  version = "0.0.1";
 
   src = ../.;
 

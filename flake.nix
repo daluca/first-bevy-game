@@ -26,6 +26,8 @@
       inherit (nixpkgs) lib;
       supportedSystems = [ "x86_64-linux" ];
       forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
+      version = (fromTOML (builtins.readFile ./Cargo.toml)).package.version;
+      edition = (fromTOML (builtins.readFile ./Cargo.toml)).package.edition;
       pkgs =
         system:
         import nixpkgs {
@@ -33,6 +35,12 @@
           overlays = [ (import rust-overlay) ];
         };
       rust = system: (pkgs system).rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      rustPlatform =
+        system:
+        (pkgs system).makeRustPlatform {
+          cargo = (rust system);
+          rustc = (rust system);
+        };
       buildTimeDependencies =
         system: with (pkgs system); [
           pkg-config
@@ -48,14 +56,14 @@
           (buildTimeDependencies system)
           (runTimeDependencies system)
         ];
-      rustPlatform =
-        system:
-        (pkgs system).makeRustPlatform {
-          cargo = (rust system);
-          rustc = (rust system);
-        };
       treefmt =
-        system: treefmt-nix.lib.evalModule (pkgs system) (import ./treefmt.nix { rust = (rust system); });
+        system:
+        treefmt-nix.lib.evalModule (pkgs system) (
+          import ./treefmt.nix {
+            inherit edition;
+            rust = (rust system);
+          }
+        );
     in
     {
       checks = forEachSystem (
@@ -161,6 +169,7 @@
           default = self.packages.${system}.game;
 
           game = import ./nix/game.nix {
+            inherit version;
             rustPlatform = rustPlatform';
             buildTimeDependencies = buildTimeDependencies';
             runTimeDependencies = runTimeDependencies';
