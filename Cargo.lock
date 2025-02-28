@@ -1921,6 +1921,7 @@ name = "first-bevy-game"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "log",
 ]
 
 [[package]]

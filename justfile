@@ -5,10 +5,10 @@ default:
     just --list --list-submodules
 
 run:
-    cargo run -q
+    cargo run --features bevy/dynamic_linking
 
 build:
-    cargo build
+    cargo build --features bevy/dynamic_linking
 
 check:
     pre-commit run --all-files
