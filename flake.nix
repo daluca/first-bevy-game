@@ -45,32 +45,7 @@
           rustc = (rust system);
         };
       treefmt =
-        system:
-        treefmt-nix.lib.evalModule (pkgs system) {
-          projectRootFile = "flake.nix";
-          programs = {
-            just.enable = true;
-            mdformat.enable = true;
-            nixfmt.enable = true;
-            rustfmt = {
-              enable = true;
-              edition = "2024";
-            };
-            shfmt.enable = true;
-            toml-sort = {
-              enable = true;
-            };
-            yamlfmt.enable = true;
-          };
-          settings.global.excludes = [
-            "LICENSE"
-            ".editorconfig"
-          ];
-          settings.formatter = {
-            rustfmt.package = (rust system);
-            toml-sort.options = [ "--no-sort-tables" ];
-          };
-        };
+        system: treefmt-nix.lib.evalModule (pkgs system) (import ./treefmt.nix { rust = (rust system); });
     in
     {
       checks = forEachSystem (
