@@ -111,6 +111,10 @@
                 };
                 extraPackages = bevyDependencies';
               };
+              treefmt = {
+                enable = true;
+                package = treefmt'.config.build.wrapper;
+              };
               typos.enable = true;
               commitlint-rs = {
                 enable = true;
@@ -128,14 +132,6 @@
 
           formatting = treefmt'.config.build.check self;
         }
-      );
-
-      formatter = forEachSystem (
-        system:
-        let
-          treefmt' = (treefmt system);
-        in
-        treefmt'.config.build.wrapper
       );
 
       devShells = forEachSystem (
@@ -159,6 +155,14 @@
             JUST_COMMAND_COLOR = "blue";
           };
         }
+      );
+
+      formatter = forEachSystem (
+        system:
+        let
+          treefmt' = (treefmt system);
+        in
+        treefmt'.config.build.wrapper
       );
     };
 }

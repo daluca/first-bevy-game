@@ -9,4 +9,7 @@ build:
     cargo build
 
 check:
-    nix flake check
+    pre-commit run --all-files
+
+format:
+    treefmt
