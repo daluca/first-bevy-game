@@ -100,6 +100,7 @@
                   rustfmt = rust';
                 };
                 extraPackages = bevyDependencies';
+                settings.config-path = "rustfmt.toml";
               };
               clippy = {
                 enable = true;
