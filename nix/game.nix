@@ -1,4 +1,6 @@
 {
+  pkgs,
+  lib,
   version,
   rustPlatform,
   buildTimeDependencies,
@@ -14,7 +16,27 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
-  nativeBuildInputs = buildTimeDependencies;
+  nativeBuildInputs =
+    with pkgs;
+    [
+      makeWrapper
+    ]
+    ++ buildTimeDependencies;
 
   buildInputs = runTimeDependencies;
+
+  postFixup = # bash
+    ''
+      wrapProgram $out/bin/first-bevy-game \
+        --prefix LD_LIBRARY_PATH : "${
+          with pkgs;
+          lib.makeLibraryPath [
+            vulkan-loader
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXi
+            libxkbcommon
+          ]
+        }"
+    '';
 }

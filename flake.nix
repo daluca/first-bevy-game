@@ -44,6 +44,11 @@
       buildTimeDependencies =
         system: with (pkgs system); [
           pkg-config
+          vulkan-loader
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXi
+          libxkbcommon
         ];
       runTimeDependencies =
         system: with (pkgs system); [
@@ -145,6 +150,17 @@
               ]
               ++ bevyDependencies'
               ++ pre-commit.enabledPackages;
+            LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${
+              with pkgs';
+              lib.makeLibraryPath [
+                vulkan-loader
+                xorg.libX11
+                xorg.libXcursor
+                xorg.libXi
+                libxkbcommon
+              ]
+            }";
+            RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
         }
@@ -161,15 +177,17 @@
       packages = forEachSystem (
         system:
         let
+          pkgs' = (pkgs system);
           rustPlatform' = (rustPlatform system);
           buildTimeDependencies' = (buildTimeDependencies system);
           runTimeDependencies' = (runTimeDependencies system);
         in
         {
-          default = self.packages.${system}.game;
+          default = self.packages.${system}.first-bevy-game;
 
-          game = import ./nix/game.nix {
-            inherit version;
+          first-bevy-game = import ./nix/game.nix {
+            inherit lib version;
+            pkgs = pkgs';
             rustPlatform = rustPlatform';
             buildTimeDependencies = buildTimeDependencies';
             runTimeDependencies = runTimeDependencies';
