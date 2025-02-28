@@ -23,6 +23,7 @@
       treefmt-nix,
     }:
     let
+      inherit (nixpkgs) lib;
       supportedSystems = [ "x86_64-linux" ];
       forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
       pkgs =
@@ -32,11 +33,20 @@
           overlays = [ (import rust-overlay) ];
         };
       rust = system: (pkgs system).rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-      bevyDependencies =
+      buildTimeDependencies =
         system: with (pkgs system); [
           pkg-config
+        ];
+      runTimeDependencies =
+        system: with (pkgs system); [
           alsa-lib
           udev
+        ];
+      bevyDependencies =
+        system:
+        lib.flatten [
+          (buildTimeDependencies system)
+          (runTimeDependencies system)
         ];
       rustPlatform =
         system:
@@ -138,6 +148,24 @@
           treefmt' = (treefmt system);
         in
         treefmt'.config.build.wrapper
+      );
+
+      packages = forEachSystem (
+        system:
+        let
+          rustPlatform' = (rustPlatform system);
+          buildTimeDependencies' = (buildTimeDependencies system);
+          runTimeDependencies' = (runTimeDependencies system);
+        in
+        {
+          default = self.packages.${system}.game;
+
+          game = import ./nix/game.nix {
+            rustPlatform = rustPlatform';
+            buildTimeDependencies = buildTimeDependencies';
+            runTimeDependencies = runTimeDependencies';
+          };
+        }
       );
     };
 }

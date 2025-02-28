@@ -1,6 +1,8 @@
+mod nix
+
 [private]
 default:
-    just --list
+    just --list --list-submodules
 
 run:
     cargo run -q
