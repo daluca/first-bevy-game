@@ -135,6 +135,7 @@
       devShells = forEachSystem (
         system:
         let
+          inherit (self.packages.${system}) wasm-server-runner;
           pkgs' = (pkgs system);
           rust' = (rust system);
           bevyDependencies' = (bevyDependencies system);
@@ -147,6 +148,7 @@
             buildInputs =
               [
                 rust'
+                wasm-server-runner
               ]
               ++ bevyDependencies'
               ++ pre-commit.enabledPackages;
@@ -192,6 +194,8 @@
             buildTimeDependencies = buildTimeDependencies';
             runTimeDependencies = runTimeDependencies';
           };
+
+          wasm-server-runner = pkgs'.callPackage ./nix/wasm-server-runner { rustPlatform = rustPlatform'; };
         }
       );
     };
