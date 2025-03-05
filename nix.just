@@ -1,6 +1,6 @@
 [private]
 default:
-    just --justfile nix.just --list
+    @just --justfile nix.just --list
 
 check:
     nix flake check

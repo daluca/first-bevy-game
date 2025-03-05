@@ -2,7 +2,7 @@ mod nix
 
 [private]
 default:
-    just --list --list-submodules
+    @just --list --list-submodules
 
 run:
     cargo run --features bevy/dynamic_linking
