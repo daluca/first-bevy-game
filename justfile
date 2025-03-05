@@ -1,4 +1,5 @@
 mod nix
+mod wasm
 
 [private]
 default:
