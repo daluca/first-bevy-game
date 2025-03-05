@@ -146,7 +146,11 @@
             inherit (pre-commit) shellHook;
             name = "first-bevy-game";
             buildInputs =
+              with pkgs';
               [
+                just
+              ]
+              ++ [
                 rust'
                 wasm-server-runner
               ]
