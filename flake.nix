@@ -223,7 +223,7 @@
 
           wasm = import ./nix/wasm {
             inherit version;
-            wasm-bingen = pkgs'.wasm-bindgen-cli_0_2_100;
+            wasm-bindgen = pkgs'.wasm-bindgen-cli_0_2_100;
             buildPackage = naersk'.buildPackage;
             lld = pkgs'.llvmPackages_20.lld;
           };
