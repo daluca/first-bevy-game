@@ -7,6 +7,9 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
+    naersk.url = "github:nix-community/naersk";
+    naersk.inputs.nixpkgs.follows = "nixpkgs";
+
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -21,7 +24,8 @@
       rust-overlay,
       git-hooks,
       treefmt-nix,
-    }:
+      ...
+    }@inputs:
     let
       inherit (nixpkgs) lib;
       supportedSystems = [ "x86_64-linux" ];
@@ -38,6 +42,12 @@
       rustPlatform =
         system:
         (pkgs system).makeRustPlatform {
+          cargo = (rust system);
+          rustc = (rust system);
+        };
+      naersk =
+        system:
+        (pkgs system).callPackage inputs.naersk {
           cargo = (rust system);
           rustc = (rust system);
         };
@@ -187,16 +197,23 @@
           rustPlatform' = (rustPlatform system);
           buildTimeDependencies' = (buildTimeDependencies system);
           runTimeDependencies' = (runTimeDependencies system);
+          naersk' = (naersk system);
         in
         {
           default = self.packages.${system}.first-bevy-game;
 
-          first-bevy-game = import ./nix/game.nix {
+          first-bevy-game = import ./nix/game {
             inherit lib version;
             pkgs = pkgs';
-            rustPlatform = rustPlatform';
+            buildPackage = naersk'.buildPackage;
             buildTimeDependencies = buildTimeDependencies';
             runTimeDependencies = runTimeDependencies';
+          };
+
+          wasm = import ./nix/wasm {
+            inherit version;
+            buildPackage = naersk'.buildPackage;
+            lld = pkgs'.llvmPackages_20.lld;
           };
 
           wasm-server-runner = pkgs'.callPackage ./nix/wasm-server-runner { rustPlatform = rustPlatform'; };

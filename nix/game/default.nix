@@ -2,19 +2,15 @@
   pkgs,
   lib,
   version,
-  rustPlatform,
+  buildPackage,
   buildTimeDependencies,
   runTimeDependencies,
 }:
 
-rustPlatform.buildRustPackage {
+buildPackage {
   inherit version;
 
-  pname = "first-bevy-game";
-
-  src = ../.;
-
-  cargoLock.lockFile = ../Cargo.lock;
+  src = ../../.;
 
   nativeBuildInputs =
     with pkgs;
@@ -25,7 +21,7 @@ rustPlatform.buildRustPackage {
 
   buildInputs = runTimeDependencies;
 
-  postFixup = # bash
+  postInstall = # bash
     ''
       wrapProgram $out/bin/first-bevy-game \
         --prefix LD_LIBRARY_PATH : "${
