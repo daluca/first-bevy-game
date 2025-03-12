@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: build
+name: Release website
 
 on:
   push:
@@ -20,21 +20,30 @@ concurrency:
 
 jobs:
   build:
-    name: nix wasm build
+    name: Build wasm bundle
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
-      - run: nix develop --command just nix build-wasm
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Build wasm bundle
+        run: nix develop --command just nix build-wasm
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifacts
+        uses: actions/upload-pages-artifact@v3
         with:
           path: result/html
 
   deploy:
-    name: deploy to GitHub Pages
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -45,5 +54,6 @@ jobs:
     needs: build
 
     steps:
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

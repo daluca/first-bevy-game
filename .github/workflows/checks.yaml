@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: checks
+name: Pull request checks
 
 on:
   pull_request:
@@ -9,11 +9,16 @@ on:
 
 jobs:
   checks:
-    name: nix checks
+    name: Flake checks
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
-      - run: nix flake check
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Run flake checks
+        run: nix flake check
