@@ -1,7 +1,5 @@
 [target.x86_64-unknown-linux-gnu]
-rustflags = [
-  "-Zshare-generics=y"
-]
+rustflags = ["-Zshare-generics=y"]
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"

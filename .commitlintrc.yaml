@@ -4,7 +4,7 @@
 #   - https://www.conventionalcommits.org/en/v1.0.0/#specification
 #   - https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type
 #   - https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716
-#
+
 rules:
   type:
     level: error
