@@ -135,6 +135,16 @@
                 pass_filenames = false;
                 require_serial = true;
               };
+              check-github-workflows = {
+                enable = true;
+                name = "check-github-workflows-jsonschema";
+                description = "Validate GitHub Workflows against the schema provided by SchemaStore";
+                package = pkgs'.check-jsonschema;
+                entry = "${check-github-workflows.package}/bin/check-jsonschema --builtin-schema vendor.github-workflows";
+                args = [ "--verbose" ];
+                files = "^\\.github/workflows/[^/]+$";
+                types = [ "yaml" ];
+              };
             };
           };
 
