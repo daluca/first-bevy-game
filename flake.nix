@@ -169,6 +169,7 @@
               with pkgs';
               [
                 just
+                wasm-bindgen-cli_0_2_100
               ]
               ++ [
                 rust'
@@ -222,6 +223,7 @@
 
           wasm = import ./nix/wasm {
             inherit version;
+            wasm-bingen = pkgs'.wasm-bindgen-cli_0_2_100;
             buildPackage = naersk'.buildPackage;
             lld = pkgs'.llvmPackages_20.lld;
           };
