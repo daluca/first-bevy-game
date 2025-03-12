@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  checks:
+    name: nix checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - run: nix flake check
