@@ -6,6 +6,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - src/**
+      - assets/**
+      - nix/**
+      - "!nix/wasm-server-runner/**"
+      - Cargo.lock
+      - Cargo.toml
+      - rust-toolchain.toml
+      - flake.lock
 
   workflow_dispatch:
 
