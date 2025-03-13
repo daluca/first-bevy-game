@@ -25,6 +25,7 @@ rules:
     options:
       - cargo
       - nix
+      - just
 
   description-empty:
     level: error
