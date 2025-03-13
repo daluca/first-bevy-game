@@ -1,50 +1,66 @@
+mod colours;
+
 use bevy::prelude::*;
-
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
-
-#[derive(Resource)]
-struct GreetTimer(Timer);
+use itertools::Itertools;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(HelloPlugin)
+        .insert_resource(ClearColor(Srgba::hex("#1f2638").unwrap().into()))
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "2048".to_string(),
+                ..default()
+            }),
+            ..default()
+        }))
+        .add_systems(Startup, (setup, spawn_board))
         .run();
 }
 
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("Elaina Proctor".to_string())));
-    commands.spawn((Person, Name("Renzo Hume".to_string())));
-    commands.spawn((Person, Name("Zayna Neives".to_string())));
+fn setup(mut commands: Commands) {
+    commands.spawn(Camera2d);
 }
 
-fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
-    if timer.0.tick(time.delta()).just_finished() {
-        for name in &query {
-            println!("hello {}!", name.0);
-        }
-    }
+const TILE_SIZE: f32 = 40.0;
+const TILE_SPACER: f32 = 10.0;
+
+#[derive(Component)]
+struct Board {
+    size: u8,
 }
 
-fn update_people(mut query: Query<&mut Name, With<Person>>) {
-    for mut name in &mut query {
-        if name.0 == "Elaina Proctor" {
-            name.0 = "Elaina Hume".to_string();
-            break;
-        }
-    }
-}
+fn spawn_board(mut commands: Commands) {
+    let board = Board { size: 4 };
+    let physical_board_size =
+        f32::from(board.size) * TILE_SIZE + f32::from(board.size + 1) * TILE_SPACER;
 
-pub struct HelloPlugin;
+    commands
+        .spawn(Sprite {
+            color: colours::BOARD,
+            custom_size: Some(Vec2::new(physical_board_size, physical_board_size)),
+            ..default()
+        })
+        .with_children(|builder| {
+            let offset = -physical_board_size / 2.0 + 0.5 * TILE_SIZE;
 
-impl Plugin for HelloPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)));
-        app.add_systems(Startup, add_people);
-        app.add_systems(Update, (update_people, greet_people).chain());
-    }
+            for tile in (0..board.size).cartesian_product(0..board.size) {
+                builder.spawn((
+                    Sprite {
+                        color: colours::TILE_PLACEHOLDER,
+                        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                        ..default()
+                    },
+                    Transform::from_xyz(
+                        offset
+                            + f32::from(tile.0) * TILE_SIZE
+                            + f32::from(tile.0 + 1) * TILE_SPACER,
+                        offset
+                            + f32::from(tile.1) * TILE_SIZE
+                            + f32::from(tile.1 + 1) * TILE_SPACER,
+                        1.0,
+                    ),
+                ));
+            }
+        })
+        .insert(board);
 }
