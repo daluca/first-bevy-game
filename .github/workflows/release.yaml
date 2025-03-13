@@ -56,7 +56,7 @@ jobs:
           purge-primary-key: never
 
       - name: Build wasm bundle
-        run: nix develop --command just nix wasm build
+        run: nix develop .#ci --command just nix wasm build
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
