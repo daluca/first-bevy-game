@@ -190,6 +190,13 @@
             RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
+
+          ci = pkgs'.mkShell {
+            name = "ci";
+            buildInputs = with pkgs'; [
+              just
+            ];
+          };
         }
       );
 
