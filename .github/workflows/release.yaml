@@ -44,7 +44,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build wasm bundle
-        run: nix develop --command just nix build-wasm
+        run: nix develop --command just nix wasm build
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
