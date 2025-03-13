@@ -13,14 +13,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    permissions:
+      actions: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install nix
-        uses: cachix/install-nix-action@v31
+        uses: nixbuild/nix-quick-install-action@v30
+
+      - name: Restore nix store from cache
+        uses: nix-community/cache-nix-action@v6
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          primary-key: checks-${{ runner.os }}-${{ hashFiles('**/flake.lock') }}
+          restore-prefixes-first-match: checks-${{ runner.os }}-
+          gc-max-store-size-linux: 0
+          purge: true
+          purge-prefixes: checks-${{ runner.os }}-
+          purge-created: 0
+          purge-primary-key: never
 
       - name: Run flake checks
         run: nix flake check
