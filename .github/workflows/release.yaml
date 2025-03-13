@@ -11,6 +11,7 @@ on:
       - assets/**
       - nix/**
       - "!nix/wasm-server-runner/**"
+      - "!nix/**.just"
       - Cargo.lock
       - Cargo.toml
       - rust-toolchain.toml
