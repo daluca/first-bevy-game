@@ -7,5 +7,5 @@ default:
 build:
     nix build .#wasm --print-build-logs
 
-run:
+run: build
     nix run .#wasm-server-runner result/bin/first-bevy-game.wasm

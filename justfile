@@ -5,11 +5,11 @@ mod wasm
 default:
     @just --list --list-submodules
 
-run:
-    cargo run --features bevy/dynamic_linking
-
 build:
     cargo build --features bevy/dynamic_linking
+
+run:
+    cargo run --features bevy/dynamic_linking
 
 check:
     pre-commit run --all-files
