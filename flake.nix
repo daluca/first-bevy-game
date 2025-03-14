@@ -163,7 +163,6 @@
         in
         {
           default = pkgs'.mkShell {
-            inherit (pre-commit) shellHook;
             name = "first-bevy-game";
             buildInputs =
               with pkgs';
@@ -187,6 +186,12 @@
                 libxkbcommon
               ]
             }";
+            shellHook = # bash
+              ''
+                mkdir -p assets/fonts/
+                ln --symbolic --force ${pkgs'.fira-sans}/share/fonts/opentype/FiraSans-Bold.otf assets/fonts/
+              ''
+              + pre-commit.shellHook;
             RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
@@ -230,6 +235,7 @@
 
           wasm = import ./nix/wasm {
             inherit version;
+            pkgs = pkgs';
             wasm-bindgen = pkgs'.wasm-bindgen-cli_0_2_100;
             buildPackage = naersk'.buildPackage;
             lld = pkgs'.llvmPackages_20.lld;
