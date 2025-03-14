@@ -1,4 +1,5 @@
 {
+  pkgs,
   version,
   buildPackage,
   wasm-bindgen,
@@ -30,8 +31,9 @@ buildPackage {
   overrideMain = _: {
     postInstall = # bash
       ''
-        mkdir -p $out/html
+        mkdir -p $out/html $out/html/assets/fonts
         cp assets/index.html $out/html/
+        cp "${pkgs.fira-sans}/share/fonts/opentype/FireSans-Bold.otf $out/html/assets/fonts/
         wasm-bindgen \
           --no-typescript \
           --out-name first-bevy-game \

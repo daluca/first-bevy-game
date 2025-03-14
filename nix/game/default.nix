@@ -34,5 +34,8 @@ buildPackage {
             libxkbcommon
           ]
         }"
+
+      mkdir -p $out/bin/assets/fonts/
+      cp ${pkgs.fira-sans}/share/fonts/opentype/FiraSans-Bold.otf $out/bin/assets/fonts/
     '';
 }
