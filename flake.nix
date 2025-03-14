@@ -234,7 +234,7 @@
           };
 
           wasm = import ./nix/wasm {
-            inherit version;
+            inherit lib version;
             pkgs = pkgs';
             wasm-bindgen = pkgs'.wasm-bindgen-cli_0_2_100;
             buildPackage = naersk'.buildPackage;

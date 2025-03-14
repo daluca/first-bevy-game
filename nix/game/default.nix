@@ -6,11 +6,13 @@
   buildTimeDependencies,
   runTimeDependencies,
 }:
-
+let
+  projectRoot = ../../.;
+in
 buildPackage {
   inherit version;
 
-  src = ../../.;
+  src = projectRoot;
 
   nativeBuildInputs =
     with pkgs;
@@ -18,6 +20,8 @@ buildPackage {
       makeWrapper
     ]
     ++ buildTimeDependencies;
+
+  cargoconfig = lib.path.append projectRoot ".cargo/config.toml";
 
   buildInputs = runTimeDependencies;
 
