@@ -1,15 +1,18 @@
 {
   pkgs,
+  lib,
   version,
   buildPackage,
   wasm-bindgen,
   lld,
 }:
-
+let
+  projectRoot = ../../.;
+in
 buildPackage {
   inherit version;
 
-  src = ../../.;
+  src = projectRoot;
 
   release = false;
 
@@ -19,6 +22,8 @@ buildPackage {
 
   CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
   CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "${lld}/bin/lld";
+
+  cargoconfig = lib.path.append projectRoot ".cargo/config.toml";
 
   cargoBuildOptions =
     defaultOptions:
