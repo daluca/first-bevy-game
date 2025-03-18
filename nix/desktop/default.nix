@@ -26,10 +26,9 @@ rustPlatform.buildRustPackage {
 
   postInstall = # bash
     ''
-      mkdir -p $out/share/fonts/
-      cp ${fira-sans}/share/fonts/opentype/FiraSans-Bold.otf $out/share/fonts/
+      mkdir -p $out/bin/assets/fonts/
+      cp ${fira-sans}/share/fonts/opentype/FiraSans-Bold.otf $out/bin/assets/fonts/
       wrapProgram $out/bin/${pname} \
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath runtimeDependencies} \
-        --chdir $out/share
     '';
 }
