@@ -47,23 +47,31 @@
       buildTimeDependencies =
         system: with (pkgs system); [
           pkg-config
-          vulkan-loader
+        ];
+      x11Dependencies =
+        system: with (pkgs system); [
           xorg.libX11
           xorg.libXcursor
           xorg.libXi
+          xorg.libXrandr
+        ];
+      waylandDependencies =
+        system: with (pkgs system); [
           libxkbcommon
+          wayland
         ];
       runTimeDependencies =
-        system: with (pkgs system); [
-          alsa-lib
-          udev
-        ];
-      bevyDependencies =
         system:
+        with (pkgs system);
         lib.flatten [
-          (buildTimeDependencies system)
-          (runTimeDependencies system)
-        ];
+          udev
+          alsa-lib
+          vulkan-loader
+        ]
+        ++ (x11Dependencies system)
+        ++ (waylandDependencies system);
+      bevyDependencies =
+        system: lib.flatten (buildTimeDependencies system) ++ (runTimeDependencies system);
       treefmt =
         system:
         treefmt-nix.lib.evalModule (pkgs system) (
@@ -151,6 +159,7 @@
           inherit (self.packages.${system}) wasm-server-runner;
           pkgs' = (pkgs system);
           rust' = (rust system);
+          runTimeDependencies' = (runTimeDependencies system);
           bevyDependencies' = (bevyDependencies system);
           pre-commit = self.checks.${system}.pre-commit;
         in
@@ -169,22 +178,13 @@
               ]
               ++ bevyDependencies'
               ++ pre-commit.enabledPackages;
-            LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${
-              with pkgs';
-              lib.makeLibraryPath [
-                vulkan-loader
-                xorg.libX11
-                xorg.libXcursor
-                xorg.libXi
-                libxkbcommon
-              ]
-            }";
             shellHook = # bash
               ''
                 mkdir -p assets/fonts/
                 ln --symbolic --force ${pkgs'.fira-sans}/share/fonts/opentype/FiraSans-Bold.otf assets/fonts/
               ''
               + pre-commit.shellHook;
+            LD_LIBRARY_PATH = lib.makeLibraryPath runTimeDependencies';
             RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
