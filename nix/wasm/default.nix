@@ -1,50 +1,33 @@
 {
-  pkgs,
   lib,
-  version,
-  buildPackage,
-  wasm-bindgen,
-  lld,
+  desktop,
+  wasm-bindgen-cli,
+  fira-sans,
 }:
-let
-  projectRoot = ../../.;
-in
-buildPackage {
-  inherit version;
 
-  src = projectRoot;
+desktop.overrideAttrs (oldAttrs: {
+  buildPhase = # bash
+    ''
+      cargo build --profile wasm-release --target wasm32-unknown-unknown
+    '';
 
-  release = false;
+  installPhase = # bash
+    ''
+      mkdir -p $out/bin/ $out/html/assets/fonts/
+      cp target/wasm32-unknown-unknown/wasm-release/${oldAttrs.pname}.wasm $out/bin
+      cp assets/index.html $out/html/
+      cp ${fira-sans}/share/fonts/opentype/FiraSans-Bold.otf $out/html/assets/fonts/
+      wasm-bindgen \
+        --no-typescript \
+        --out-name ${oldAttrs.pname} \
+        --out-dir $out/html \
+        --target web \
+        $out/bin/${oldAttrs.pname}.wasm
+    '';
+
+  doCheck = false;
 
   nativeBuildInputs = [
-    wasm-bindgen
-  ];
-
-  CARGO_BUILD_TARGET = "wasm32-unknown-unknown";
-  CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "${lld}/bin/lld";
-
-  cargoconfig = lib.path.append projectRoot ".cargo/config.toml";
-
-  cargoBuildOptions =
-    defaultOptions:
-    defaultOptions
-    ++ [
-      "--profile"
-      "wasm-release"
-    ];
-
-  overrideMain = _: {
-    postInstall = # bash
-      ''
-        mkdir -p $out/html $out/html/assets/fonts
-        cp assets/index.html $out/html/
-        cp "${pkgs.fira-sans}/share/fonts/opentype/FireSans-Bold.otf $out/html/assets/fonts/
-        wasm-bindgen \
-          --no-typescript \
-          --out-name first-bevy-game \
-          --out-dir $out/html \
-          --target web \
-          $out/bin/first-bevy-game.wasm
-      '';
-  };
-}
+    wasm-bindgen-cli
+  ] ++ (lib.ifilter0 (i: _: i != 0) oldAttrs.nativeBuildInputs);
+})
