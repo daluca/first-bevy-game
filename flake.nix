@@ -7,9 +7,6 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
 
-    naersk.url = "github:nix-community/naersk";
-    naersk.inputs.nixpkgs.follows = "nixpkgs";
-
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -25,13 +22,15 @@
       git-hooks,
       treefmt-nix,
       ...
-    }@inputs:
+    }:
     let
       inherit (nixpkgs) lib;
       supportedSystems = [ "x86_64-linux" ];
       forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
-      version = (fromTOML (builtins.readFile ./Cargo.toml)).package.version;
-      edition = (fromTOML (builtins.readFile ./Cargo.toml)).package.edition;
+      cargo = (builtins.fromTOML (builtins.readFile ./Cargo.toml)).package;
+      version = cargo.version;
+      edition = cargo.edition;
+      pname = cargo.name;
       pkgs =
         system:
         import nixpkgs {
@@ -45,32 +44,34 @@
           cargo = (rust system);
           rustc = (rust system);
         };
-      naersk =
-        system:
-        (pkgs system).callPackage inputs.naersk {
-          cargo = (rust system);
-          rustc = (rust system);
-        };
       buildTimeDependencies =
         system: with (pkgs system); [
           pkg-config
-          vulkan-loader
+        ];
+      x11Dependencies =
+        system: with (pkgs system); [
           xorg.libX11
           xorg.libXcursor
           xorg.libXi
-          libxkbcommon
+          xorg.libXrandr
         ];
-      runTimeDependencies =
+      waylandDependencies =
         system: with (pkgs system); [
-          alsa-lib
-          udev
+          libxkbcommon
+          wayland
         ];
-      bevyDependencies =
+      runtimeDependencies =
         system:
+        with (pkgs system);
         lib.flatten [
-          (buildTimeDependencies system)
-          (runTimeDependencies system)
-        ];
+          udev
+          alsa-lib
+          vulkan-loader
+        ]
+        ++ (x11Dependencies system)
+        ++ (waylandDependencies system);
+      bevyDependencies =
+        system: lib.flatten (buildTimeDependencies system) ++ (runtimeDependencies system);
       treefmt =
         system:
         treefmt-nix.lib.evalModule (pkgs system) (
@@ -158,6 +159,7 @@
           inherit (self.packages.${system}) wasm-server-runner;
           pkgs' = (pkgs system);
           rust' = (rust system);
+          runtimeDependencies' = (runtimeDependencies system);
           bevyDependencies' = (bevyDependencies system);
           pre-commit = self.checks.${system}.pre-commit;
         in
@@ -176,22 +178,13 @@
               ]
               ++ bevyDependencies'
               ++ pre-commit.enabledPackages;
-            LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${
-              with pkgs';
-              lib.makeLibraryPath [
-                vulkan-loader
-                xorg.libX11
-                xorg.libXcursor
-                xorg.libXi
-                libxkbcommon
-              ]
-            }";
             shellHook = # bash
               ''
                 mkdir -p assets/fonts/
                 ln --symbolic --force ${pkgs'.fira-sans}/share/fonts/opentype/FiraSans-Bold.otf assets/fonts/
               ''
               + pre-commit.shellHook;
+            LD_LIBRARY_PATH = lib.makeLibraryPath runtimeDependencies';
             RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
@@ -219,26 +212,25 @@
           pkgs' = (pkgs system);
           rustPlatform' = (rustPlatform system);
           buildTimeDependencies' = (buildTimeDependencies system);
-          runTimeDependencies' = (runTimeDependencies system);
-          naersk' = (naersk system);
+          runtimeDependencies' = (runtimeDependencies system);
         in
         {
-          default = self.packages.${system}.first-bevy-game;
+          default = self.packages.${system}.desktop;
 
-          first-bevy-game = import ./nix/game {
-            inherit lib version;
-            pkgs = pkgs';
-            buildPackage = naersk'.buildPackage;
+          desktop = import ./nix/desktop {
+            inherit pname version lib;
+            rustPlatform = rustPlatform';
             buildTimeDependencies = buildTimeDependencies';
-            runTimeDependencies = runTimeDependencies';
+            runtimeDependencies = runtimeDependencies';
+            makeWrapper = pkgs'.makeWrapper;
+            fira-sans = pkgs'.fira-sans;
           };
 
           wasm = import ./nix/wasm {
-            inherit lib version;
-            pkgs = pkgs';
-            wasm-bindgen = pkgs'.wasm-bindgen-cli_0_2_100;
-            buildPackage = naersk'.buildPackage;
-            lld = pkgs'.llvmPackages_20.lld;
+            inherit lib;
+            desktop = self.packages.${system}.desktop;
+            wasm-bindgen-cli = pkgs'.wasm-bindgen-cli_0_2_100;
+            fira-sans = pkgs'.fira-sans;
           };
 
           wasm-server-runner = pkgs'.callPackage ./nix/wasm-server-runner { rustPlatform = rustPlatform'; };
