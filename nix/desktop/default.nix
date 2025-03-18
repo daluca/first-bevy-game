@@ -4,7 +4,7 @@
   version,
   rustPlatform,
   buildTimeDependencies,
-  runTimeDependencies,
+  runtimeDependencies,
   makeWrapper,
   fira-sans,
 }:
@@ -22,13 +22,13 @@ rustPlatform.buildRustPackage {
     makeWrapper
   ] ++ buildTimeDependencies;
 
-  buildInputs = runTimeDependencies;
+  buildInputs = runtimeDependencies;
 
   postInstall = # bash
     ''
       mkdir -p $out/bin/assets/fonts/
       cp ${fira-sans}/share/fonts/opentype/FiraSans-Bold.otf $out/bin/assets/fonts/
       wrapProgram $out/bin/${pname} \
-        --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath runTimeDependencies}
+        --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath runtimeDependencies}
     '';
 }

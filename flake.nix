@@ -60,7 +60,7 @@
           libxkbcommon
           wayland
         ];
-      runTimeDependencies =
+      runtimeDependencies =
         system:
         with (pkgs system);
         lib.flatten [
@@ -71,7 +71,7 @@
         ++ (x11Dependencies system)
         ++ (waylandDependencies system);
       bevyDependencies =
-        system: lib.flatten (buildTimeDependencies system) ++ (runTimeDependencies system);
+        system: lib.flatten (buildTimeDependencies system) ++ (runtimeDependencies system);
       treefmt =
         system:
         treefmt-nix.lib.evalModule (pkgs system) (
@@ -159,7 +159,7 @@
           inherit (self.packages.${system}) wasm-server-runner;
           pkgs' = (pkgs system);
           rust' = (rust system);
-          runTimeDependencies' = (runTimeDependencies system);
+          runtimeDependencies' = (runtimeDependencies system);
           bevyDependencies' = (bevyDependencies system);
           pre-commit = self.checks.${system}.pre-commit;
         in
@@ -184,7 +184,7 @@
                 ln --symbolic --force ${pkgs'.fira-sans}/share/fonts/opentype/FiraSans-Bold.otf assets/fonts/
               ''
               + pre-commit.shellHook;
-            LD_LIBRARY_PATH = lib.makeLibraryPath runTimeDependencies';
+            LD_LIBRARY_PATH = lib.makeLibraryPath runtimeDependencies';
             RUST_BACKTRACE = 1;
             JUST_COMMAND_COLOR = "blue";
           };
@@ -212,7 +212,7 @@
           pkgs' = (pkgs system);
           rustPlatform' = (rustPlatform system);
           buildTimeDependencies' = (buildTimeDependencies system);
-          runTimeDependencies' = (runTimeDependencies system);
+          runtimeDependencies' = (runtimeDependencies system);
         in
         {
           default = self.packages.${system}.desktop;
@@ -221,7 +221,7 @@
             inherit pname version lib;
             rustPlatform = rustPlatform';
             buildTimeDependencies = buildTimeDependencies';
-            runTimeDependencies = runTimeDependencies';
+            runtimeDependencies = runtimeDependencies';
             makeWrapper = pkgs'.makeWrapper;
             fira-sans = pkgs'.fira-sans;
           };
