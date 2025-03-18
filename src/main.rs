@@ -7,13 +7,29 @@ use rand::prelude::*;
 fn main() {
     App::new()
         .insert_resource(ClearColor(Srgba::hex("#1f2638").unwrap().into()))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "2048".to_string(),
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "2048".to_string(),
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(AssetPlugin {
+                    file_path: std::env::current_dir()
+                        .unwrap()
+                        .into_os_string()
+                        .into_string()
+                        .unwrap(),
+                    processed_file_path: std::env::current_dir()
+                        .unwrap()
+                        .into_os_string()
+                        .into_string()
+                        .unwrap(),
+                    ..default()
+                }),
+        )
         .init_resource::<FontSpec>()
         .add_systems(
             Startup,
